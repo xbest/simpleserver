@@ -23,12 +23,8 @@ public class RequestHandler implements Runnable {
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
-//            RequestParser parser = new RequestParser(reader);
-            if (reader == null) {
-                System.out.println("null");
-            }
-            String[] lines = reader.readLine().split(" ");
-            String filePath = Server.BASE_PATH + lines[1];
+            RequestParser parser = new RequestParser(reader);
+            String filePath = Server.BASE_PATH + parser.getURI();
             if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
                 File img = new File(filePath);
                 byte[] imgBytes = Files.readAllBytes(img.toPath());
