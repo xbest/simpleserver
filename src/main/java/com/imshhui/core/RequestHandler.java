@@ -24,22 +24,65 @@ public class RequestHandler implements Runnable {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
             RequestParser parser = new RequestParser(reader);
-            String filePath = Server.BASE_PATH + parser.getURI();
-            if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
-                File img = new File(filePath);
-                byte[] imgBytes = Files.readAllBytes(img.toPath());
-                writer.println("HTTP/1.1 200 OK");
-                writer.println("Server: imshhui");
+            String uri = parser.getURI();
+            String filePath = SimpleHttpServer.BASE_PATH + uri;
+            File file = new File(filePath);
+            if (file.isDirectory()) {
+                writer.println(HttpStatus.OK);
+                writer.println("Server: solar");
+                writer.println("Content-Type: text/html; charset=UTF-8");
+                writer.println("");
+                StringBuilder sb = new StringBuilder();
+                String path = file.getPath();
+                sb.append("<!DOCTYPE html>\r\n");
+                sb.append("<html><head><title>");
+                sb.append("Listing of: ");
+                sb.append(path);
+                sb.append("</title></head><body>\r\n");
+                sb.append("<h2>Directory listing for ");
+                sb.append(path);
+                sb.append("</h2>\r\n");
+                sb.append("<hr>");
+                sb.append("<ul>");
+                sb.append("<li><a href=\"..");
+                sb.append("/".equals(uri) ? "/" : uri.substring(0, uri.lastIndexOf("/")));
+                sb.append("\">..</a></li>\r\n");
+                for (File f : file.listFiles()) {
+                    if (!f.canRead()) {
+                        continue;
+                    }
+                    String name = f.getName();
+                    sb.append("<li><a href=\"..");
+                    sb.append("/".equals(uri) ? "" : uri);
+                    sb.append("\\" + name);
+                    sb.append("\">");
+                    sb.append(name);
+                    sb.append("</a></li>\r\n");
+                }
+                sb.append("</ul></body></html>\r\n");
+                sb.append("<hr>");
+                writer.println(sb.toString());
+                writer.println("");
+            } else if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
+                byte[] imgBytes = Files.readAllBytes(file.toPath());
+                writer.println(HttpStatus.OK);
+                writer.println("Server: solar");
                 writer.println("Content-Type: image/jpeg");
                 writer.println("Content-Length: " + imgBytes.length);
                 writer.println("");
                 socket.getOutputStream().write(imgBytes, 0, imgBytes.length);
             } else if (filePath.endsWith("zip")) {
+                byte[] imgBytes = Files.readAllBytes(file.toPath());
+                writer.println(HttpStatus.OK);
+                writer.println("Server: solar");
                 writer.println("Content-Type: application/octet-stream");
+                writer.println("Content-Length: " + imgBytes.length);
+                writer.println("");
+                socket.getOutputStream().write(imgBytes, 0, imgBytes.length);
             } else {
                 localReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
-                writer.println("HTTP/1.1 200 OK");
-                writer.println("Server: imshhui");
+                writer.println(HttpStatus.OK);
+                writer.println("Server: solar");
                 writer.println("Content-Type: text/plain; charset=UTF-8");
                 writer.println("");
                 String line;
@@ -50,7 +93,7 @@ public class RequestHandler implements Runnable {
             writer.flush();
         } catch (Exception e) {
             e.printStackTrace();
-            writer.println("HTTP/1.1 500");
+            writer.println(HttpStatus.INTERNAL_SERVER_ERROR);
             writer.println("");
             writer.flush();
         } finally {

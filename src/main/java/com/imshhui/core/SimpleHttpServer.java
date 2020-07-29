@@ -10,10 +10,11 @@ import java.util.concurrent.Executors;
  * User: liyulin
  * Date: 2020/7/28
  */
-public class Server implements Runnable {
-    private static final int PORT = 9090;
+public class SimpleHttpServer implements Runnable {
+    private static final int PORT = 80;
     private static final String ADDRESS = "localhost";
     public static final String BASE_PATH = "D:\\";
+    private static final ExecutorService pool = Executors.newFixedThreadPool(10);
 
     @Override
     public void run() {
@@ -21,7 +22,7 @@ public class Server implements Runnable {
             ServerSocket serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(ADDRESS, PORT));
             while (!Thread.interrupted()) {
-                new Thread(new RequestHandler(serverSocket.accept())).start();
+                pool.execute(new RequestHandler(serverSocket.accept()));
             }
         } catch (IOException e) {
             e.printStackTrace();

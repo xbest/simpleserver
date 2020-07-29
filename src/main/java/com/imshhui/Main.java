@@ -1,6 +1,6 @@
 package com.imshhui;
 
-import com.imshhui.core.Server;
+import com.imshhui.core.SimpleHttpServer;
 
 /**
  * User: liyulin
@@ -8,7 +8,7 @@ import com.imshhui.core.Server;
  */
 public class Main {
     public static void main(String[] args) {
-        Server server = new Server();
+        SimpleHttpServer server = new SimpleHttpServer();
         server.start();
     }
 }
