@@ -14,6 +14,7 @@ public class HttpResponse {
     private OutputStream outputStream;
     private byte[] content;
     private String lastModified;
+    private static final String CRLF = "\r\n";
 
     public HttpResponse(String status, String server, String contentType, OutputStream outputStream, byte[] content,
                         String lastModified) {
@@ -27,14 +28,14 @@ public class HttpResponse {
 
     public void send() throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append(status).append("\r\n");
-        sb.append(server).append("\r\n");
-        sb.append(contentType).append("\r\n");
-        sb.append("Last-Modified: ").append(lastModified).append("\r\n");
+        sb.append(status).append(CRLF);
+        sb.append(server).append(CRLF);
+        sb.append(contentType).append(CRLF);
+        sb.append("Last-Modified: ").append(lastModified).append(CRLF);
         if (Objects.nonNull(content)) {
-            sb.append("Content-Length: " + content.length).append("\r\n");
+            sb.append("Content-Length: " + content.length).append(CRLF);
         }
-        sb.append("\r\n");
+        sb.append(CRLF);
         byte[] header = sb.toString().getBytes();
         outputStream.write(header, 0, header.length);
         if (Objects.nonNull(content)) {
