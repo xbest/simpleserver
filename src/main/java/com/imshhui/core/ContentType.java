@@ -11,6 +11,7 @@ public interface ContentType {
     String IMAGE_JPEG = CONTENT_TYPE + "image/jpeg";
     String OCTET_STREAM = CONTENT_TYPE + "application/octet-stream";
     String TEXT_PLAIN = CONTENT_TYPE + "text/plain;" + CHARSET;
+    String PDF = CONTENT_TYPE + "application/pdf";
 
     static String guessType(String filePath) {
         if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
@@ -19,6 +20,10 @@ public interface ContentType {
             return OCTET_STREAM;
         } else if (filePath.endsWith("xml")) {
             return TEXT_XML;
+        } else if (filePath.endsWith("html") || filePath.endsWith("htm")) {
+            return TEXT_HTML;
+        } else if (filePath.endsWith("pdf")) {
+            return PDF;
         }
         return TEXT_PLAIN;
     }

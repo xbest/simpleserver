@@ -28,7 +28,7 @@ public class RequestParser {
     }
 
     public String getURI() {
-        return httpRequestLine[1];
+        return httpRequestLine[1].replaceAll("%20"," ");
     }
 
     public String getVersion() {

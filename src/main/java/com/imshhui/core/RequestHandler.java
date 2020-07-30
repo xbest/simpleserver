@@ -5,6 +5,7 @@ import com.imshhui.utils.Utils;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Objects;
 
 /**
  * User: liyulin
@@ -108,7 +109,9 @@ public class RequestHandler implements Runnable {
         sb.append("<li><a href=\"");
         sb.append("/".equals(uri) ? "/" : pre.isEmpty() ? "/" : pre);
         sb.append("\">..</a></li>\r\n");
-        for (File f : file.listFiles()) {
+
+        File[] files = Objects.isNull(file.listFiles()) ? new File[0] : file.listFiles();
+        for (File f : files) {
             if (!f.canRead()) {
                 continue;
             }
