@@ -9,6 +9,7 @@ import java.nio.file.Files;
  * Date: 2020/7/28
  */
 public class RequestHandler implements Runnable {
+    private static final String SERVER = "Server: solar";
     private Socket socket;
 
     public RequestHandler(Socket socket) {
@@ -20,7 +21,11 @@ public class RequestHandler implements Runnable {
         BufferedReader reader = null;
         BufferedReader localReader = null;
         PrintWriter writer = null;
+        OutputStream outputStream = null;
         try {
+            outputStream = socket.getOutputStream();
+            HttpResponse.Builder responseBuilder = HttpResponse.builder();
+            responseBuilder.status(HttpStatus.OK).server(SERVER).outputStream(outputStream);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream());
             RequestParser parser = new RequestParser(reader);
@@ -28,10 +33,6 @@ public class RequestHandler implements Runnable {
             String filePath = SimpleHttpServer.BASE_PATH + uri;
             File file = new File(filePath);
             if (file.isDirectory()) {
-                writer.println(HttpStatus.OK);
-                writer.println("Server: solar");
-                writer.println("Content-Type: text/html; charset=UTF-8");
-                writer.println("");
                 StringBuilder sb = new StringBuilder();
                 String path = file.getPath();
                 sb.append("<!DOCTYPE html>\r\n");
@@ -60,39 +61,21 @@ public class RequestHandler implements Runnable {
                     sb.append("</a></li>\r\n");
                 }
                 sb.append("</ul></body></html>\r\n");
-                sb.append("<hr>");
-                writer.println(sb.toString());
-                writer.println("");
+                sb.append("<hr>\r\n");
+                sb.append("\r\n");
+//                writer.println(sb.toString());
+//                writer.println("");
+                responseBuilder.contentType(ContentType.TEXT_HTML).content(sb.toString().getBytes());
+
             } else if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
-                byte[] imgBytes = Files.readAllBytes(file.toPath());
-                writer.println(HttpStatus.OK);
-                writer.println("Server: solar");
-                writer.println("Content-Type: image/jpeg");
-                writer.println("Content-Length: " + imgBytes.length);
-                writer.println("");
-                socket.getOutputStream().write(imgBytes, 0, imgBytes.length);
+                responseBuilder.contentType(ContentType.IMAGE_JPEG).content(Files.readAllBytes(file.toPath()));
             } else if (filePath.endsWith("zip")) {
-                byte[] imgBytes = Files.readAllBytes(file.toPath());
-                writer.println(HttpStatus.OK);
-                writer.println("Server: solar");
-                writer.println("Content-Type: application/octet-stream");
-                writer.println("Content-Length: " + imgBytes.length);
-                writer.println("");
-                socket.getOutputStream().write(imgBytes, 0, imgBytes.length);
+                responseBuilder.contentType(ContentType.OCTET_STREAM).content(Files.readAllBytes(file.toPath()));
             } else {
-                localReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
-                writer.println(HttpStatus.OK);
-                writer.println("Server: solar");
-                writer.println("Content-Type: text/plain; charset=UTF-8");
-                writer.println("");
-                String line;
-                while ((line = localReader.readLine()) != null) {
-                    writer.println(line);
-                }
+                responseBuilder.contentType(ContentType.TEXT_PLAIN).content(Files.readAllBytes(file.toPath()));
             }
-            writer.flush();
+            responseBuilder.build().send();
         } catch (Exception e) {
-            e.printStackTrace();
             writer.println(HttpStatus.INTERNAL_SERVER_ERROR);
             writer.println("");
             writer.flush();
