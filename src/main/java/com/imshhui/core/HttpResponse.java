@@ -44,9 +44,9 @@ public class HttpResponse {
     }
 
     public static class Builder {
-        private String status;
+        private String status = HttpStatus.OK;
         private String server = "Server: solar";
-        private String contentType;
+        private String contentType = ContentType.TEXT_PLAIN;
         private OutputStream outputStream;
         private byte[] content;
 

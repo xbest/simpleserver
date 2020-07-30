@@ -43,12 +43,16 @@ public class RequestHandler implements Runnable {
                 return;
             }
 
-            String filePath = SimpleHttpServer.BASE_PATH + uri;
+            String filePath = ServerConfig.BASE_PATH + uri;
 
             File file = new File(filePath);
             if (file.isDirectory()) {
-                String content = directoryListing(uri, file);
-                responseBuilder.contentType(ContentType.TEXT_HTML).content(content.getBytes());
+                if (ServerConfig.DIRECTORY_LISTING) {
+                    String content = directoryListing(uri, file);
+                    responseBuilder.contentType(ContentType.TEXT_HTML).content(content.getBytes());
+                } else {
+                    responseBuilder.status(HttpStatus.FORBIDDEN);
+                }
             } else {
                 responseBuilder.contentType(ContentType.guessType(filePath)).content(Files.readAllBytes(file.toPath()));
             }
