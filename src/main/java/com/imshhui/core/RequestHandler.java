@@ -30,6 +30,19 @@ public class RequestHandler implements Runnable {
 
             RequestParser parser = new RequestParser(reader);
             String uri = parser.getURI();
+            String method = parser.getMethod();
+            String version = parser.getVersion();
+
+            if (!"HTTP/1.1".equals(version) && !"HTTP/1.0".equals(version)) {
+                responseBuilder.status(HttpStatus.HTTP_VERSION_NOT_SUPPORTED).build().send();
+                return;
+            }
+
+            if (!"GET".equals(method)) {
+                responseBuilder.status(HttpStatus.METHOD_NOT_ALLOWED).build().send();
+                return;
+            }
+
             String filePath = SimpleHttpServer.BASE_PATH + uri;
 
             File file = new File(filePath);
