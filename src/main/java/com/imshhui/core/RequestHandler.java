@@ -93,6 +93,7 @@ public class RequestHandler implements Runnable {
 
     private String directoryListing(String uri, File file) {
         StringBuilder sb = new StringBuilder();
+        String pre = uri.substring(0, uri.lastIndexOf("/"));
         String path = file.getPath();
         sb.append("<!DOCTYPE html>\r\n");
         sb.append("<html><head><title>");
@@ -104,15 +105,15 @@ public class RequestHandler implements Runnable {
         sb.append("</h2>\r\n");
         sb.append("<hr>");
         sb.append("<ul>");
-        sb.append("<li><a href=\"..");
-        sb.append("/".equals(uri) ? "/" : uri.substring(0, uri.lastIndexOf("/")));
+        sb.append("<li><a href=\"");
+        sb.append("/".equals(uri) ? "/" : pre.isEmpty() ? "/" : pre);
         sb.append("\">..</a></li>\r\n");
         for (File f : file.listFiles()) {
             if (!f.canRead()) {
                 continue;
             }
             String name = f.getName();
-            sb.append("<li><a href=\"..");
+            sb.append("<li><a href=\"");
             sb.append("/".equals(uri) ? "" : uri);
             sb.append("\\" + name);
             sb.append("\">");
