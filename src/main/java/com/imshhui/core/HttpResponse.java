@@ -2,6 +2,7 @@ package com.imshhui.core;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * User: liyulin
@@ -27,11 +28,13 @@ public class HttpResponse {
         sb.append(status).append("\r\n");
         sb.append(server).append("\r\n");
         sb.append(contentType).append("\r\n");
-        sb.append("Content-Length: " + content.length).append("\r\n");
+        if (Objects.nonNull(content)) {
+            sb.append("Content-Length: " + content.length).append("\r\n");
+        }
         sb.append("\r\n");
         byte[] header = sb.toString().getBytes();
         outputStream.write(header, 0, header.length);
-        if (content != null) {
+        if (Objects.nonNull(content)) {
             outputStream.write(content, 0, content.length);
         }
     }

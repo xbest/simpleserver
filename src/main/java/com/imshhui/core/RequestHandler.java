@@ -19,19 +19,21 @@ public class RequestHandler implements Runnable {
     @Override
     public void run() {
         BufferedReader reader = null;
-        BufferedReader localReader = null;
-        PrintWriter writer = null;
         OutputStream outputStream = null;
         try {
             outputStream = socket.getOutputStream();
+
             HttpResponse.Builder responseBuilder = HttpResponse.builder();
             responseBuilder.status(HttpStatus.OK).server(SERVER).outputStream(outputStream);
+
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            writer = new PrintWriter(socket.getOutputStream());
+
             RequestParser parser = new RequestParser(reader);
             String uri = parser.getURI();
             String filePath = SimpleHttpServer.BASE_PATH + uri;
+
             File file = new File(filePath);
+
             if (file.isDirectory()) {
                 StringBuilder sb = new StringBuilder();
                 String path = file.getPath();
@@ -63,8 +65,6 @@ public class RequestHandler implements Runnable {
                 sb.append("</ul></body></html>\r\n");
                 sb.append("<hr>\r\n");
                 sb.append("\r\n");
-//                writer.println(sb.toString());
-//                writer.println("");
                 responseBuilder.contentType(ContentType.TEXT_HTML).content(sb.toString().getBytes());
 
             } else if (filePath.endsWith("jpg") || filePath.endsWith("jpeg")) {
@@ -76,11 +76,15 @@ public class RequestHandler implements Runnable {
             }
             responseBuilder.build().send();
         } catch (Exception e) {
-            writer.println(HttpStatus.INTERNAL_SERVER_ERROR);
-            writer.println("");
-            writer.flush();
+            try {
+                HttpResponse.builder().status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(ContentType.TEXT_PLAIN)
+                        .outputStream(outputStream).build().send();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         } finally {
-            close(reader, localReader, writer);
+            close(reader);
         }
     }
 
