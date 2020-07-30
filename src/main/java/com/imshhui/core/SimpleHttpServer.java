@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 /**
  * User: liyulin
- * Date: 2020/7/28
  */
 public class SimpleHttpServer implements Runnable {
     private static final ExecutorService pool = Executors.newFixedThreadPool(10);

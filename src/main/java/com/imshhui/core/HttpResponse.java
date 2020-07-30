@@ -6,7 +6,6 @@ import java.util.Objects;
 
 /**
  * User: liyulin
- * Date: 2020/7/29
  */
 public class HttpResponse {
     private String status;
@@ -14,13 +13,16 @@ public class HttpResponse {
     private String contentType;
     private OutputStream outputStream;
     private byte[] content;
+    private String lastModified;
 
-    public HttpResponse(String status, String server, String contentType, OutputStream outputStream, byte[] content) {
+    public HttpResponse(String status, String server, String contentType, OutputStream outputStream, byte[] content,
+                        String lastModified) {
         this.status = status;
         this.server = server;
         this.contentType = contentType;
         this.outputStream = outputStream;
         this.content = content;
+        this.lastModified = lastModified;
     }
 
     public void send() throws IOException {
@@ -28,6 +30,7 @@ public class HttpResponse {
         sb.append(status).append("\r\n");
         sb.append(server).append("\r\n");
         sb.append(contentType).append("\r\n");
+        sb.append("Last-Modified: ").append(lastModified).append("\r\n");
         if (Objects.nonNull(content)) {
             sb.append("Content-Length: " + content.length).append("\r\n");
         }
@@ -45,10 +48,11 @@ public class HttpResponse {
 
     public static class Builder {
         private String status = HttpStatus.OK;
-        private String server = "Server: solar";
+        private String server = ServerConfig.SERVER_NAME;
         private String contentType = ContentType.TEXT_PLAIN;
         private OutputStream outputStream;
         private byte[] content;
+        private String lastModified;
 
         public Builder() {
         }
@@ -78,8 +82,13 @@ public class HttpResponse {
             return this;
         }
 
+        public Builder lastModified(String lastModified) {
+            this.lastModified = lastModified;
+            return this;
+        }
+
         public HttpResponse build() {
-            return new HttpResponse(status, server, contentType, outputStream, content);
+            return new HttpResponse(status, server, contentType, outputStream, content, lastModified);
         }
     }
 }

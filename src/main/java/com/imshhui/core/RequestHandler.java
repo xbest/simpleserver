@@ -1,15 +1,15 @@
 package com.imshhui.core;
 
+import com.imshhui.utils.Utils;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 
 /**
  * User: liyulin
- * Date: 2020/7/28
  */
 public class RequestHandler implements Runnable {
-    private static final String SERVER = "Server: solar";
     private Socket socket;
 
     public RequestHandler(Socket socket) {
@@ -24,11 +24,18 @@ public class RequestHandler implements Runnable {
             outputStream = socket.getOutputStream();
 
             HttpResponse.Builder responseBuilder = HttpResponse.builder();
-            responseBuilder.status(HttpStatus.OK).server(SERVER).outputStream(outputStream);
+            responseBuilder.outputStream(outputStream);
 
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            RequestParser parser = new RequestParser(reader);
+            RequestParser parser;
+            try {
+                parser = new RequestParser(reader);
+            } catch (Exception e) {
+                responseBuilder.status(HttpStatus.BAD_REQUEST).build().send();
+                return;
+            }
+
             String uri = parser.getURI();
             String method = parser.getMethod();
             String version = parser.getVersion();
@@ -46,6 +53,18 @@ public class RequestHandler implements Runnable {
             String filePath = ServerConfig.BASE_PATH + uri;
 
             File file = new File(filePath);
+            if (!file.exists()) {
+                responseBuilder.status(HttpStatus.NOT_FOUND).build().send();
+                return;
+            }
+
+            long lastModified = file.lastModified();
+            responseBuilder.lastModified(Utils.formatModify(lastModified));
+            if (Utils.isUnModified(parser.getLastModified(), lastModified)) {
+                responseBuilder.status(HttpStatus.NOT_MODIFIED).build().send();
+                return;
+            }
+
             if (file.isDirectory()) {
                 if (ServerConfig.DIRECTORY_LISTING) {
                     String content = directoryListing(uri, file);

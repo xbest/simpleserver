@@ -5,12 +5,12 @@ import java.util.Properties;
 
 /**
  * User: liyulin
- * Date: 2020/7/29
  */
 public class ServerConfig {
     static int PORT = 9066;
     static String BASE_PATH = "/";
     static boolean DIRECTORY_LISTING = false;
+    static String SERVER_NAME = "Server: solar";
 
     static {
         Properties properties = new Properties();
@@ -19,6 +19,7 @@ public class ServerConfig {
             PORT = Integer.valueOf(properties.getProperty("port"));
             BASE_PATH = properties.getProperty("base_path");
             DIRECTORY_LISTING = Boolean.valueOf(properties.getProperty("directory_listing"));
+            SERVER_NAME = properties.getProperty("server_name");
         } catch (IOException e) {
             e.printStackTrace();
         }

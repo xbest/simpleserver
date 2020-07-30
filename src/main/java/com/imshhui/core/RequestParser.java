@@ -4,16 +4,23 @@ import java.io.BufferedReader;
 
 /**
  * User: liyulin
- * Date: 2020/7/28
  */
 public class RequestParser {
     private String[] httpRequestLine;
+    private String lastModified;
 
     public RequestParser(BufferedReader reader) throws Exception {
         if (reader == null) {
             throw new Exception("Not enough data received");
         }
         httpRequestLine = reader.readLine().split(" ");
+        String line;
+        while (!(line = reader.readLine()).isEmpty()) {
+            String[] strings = line.split(":", 2);
+            if (strings.length == 2 && "If-Modified-Since".equals(strings[0])) {
+                lastModified = strings[1].trim();
+            }
+        }
     }
 
     public String getMethod() {
@@ -26,5 +33,9 @@ public class RequestParser {
 
     public String getVersion() {
         return httpRequestLine[2];
+    }
+
+    public String getLastModified() {
+        return lastModified;
     }
 }
